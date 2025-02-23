@@ -32,23 +32,29 @@ To get your Instagram Developer credentials (APP_ID and APP_SECRET):
 2. Log in with your Facebook account (must be linked to your Instagram account)
 3. Create a New App:
    - Click "Create App"
-   - Select "Consumer" as the app type
-   - Fill in the app details
+   - At "Add use cases" screen, scroll down and select "Other"
+   - Choose "Business" as the app type
+   - Fill in your app name and contact email
    - Click "Create App"
 
-4. Add Instagram Basic Display:
-   - In your app dashboard, click "Add Product"
-   - Find "Instagram Basic Display" and click "Set Up"
-   - Follow the setup wizard
+4. Add Instagram Permissions:
+   - In your app dashboard, click "Add Products"
+   - Find and add these products:
+     * Instagram Graph API
+     * Instagram Basic Display API
+   - Follow the setup wizard for each
 
 5. Configure Your App:
-   - Go to "Basic Display" under "Instagram Basic Display"
+   - Go to "Instagram Basic Display" → "Basic Display"
    - Under "OAuth Redirect URLs" add:
      ```
      http://localhost:8000/auth/
      ```
-   - Add your app's privacy policy URL and terms of service URL
-   - Save changes
+   - Add your app's privacy policy URL (can be your GitHub repo URL)
+   - Under "App Review", request these permissions:
+     * instagram_graph_user_profile
+     * instagram_graph_user_media
+     * instagram_basic_display
 
 6. Get Your Credentials:
    - `INSTAGRAM_APP_ID`: Find this in your app's basic settings
