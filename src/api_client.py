@@ -86,10 +86,28 @@ class InstagramAPIClient:
         Returns:
             The numeric media ID
         """
+        # If the ID already contains an underscore (e.g., "123_456"), it's already a media ID
+        if '_' in shortcode:
+            return shortcode
+            
         alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
         media_id = 0
         for char in shortcode:
             media_id = media_id * 64 + alphabet.index(char)
+            
+        # Instagram media IDs are typically in format <media_id>_<user_id>
+        # If we don't have the user_id part, try to fetch it from the media info
+        if '_' not in str(media_id):
+            try:
+                # Try to get the user ID from the post info
+                post_info = self.api.media_info(str(media_id))
+                if post_info and 'items' in post_info and post_info['items']:
+                    user_id = post_info['items'][0].get('user', {}).get('pk')
+                    if user_id:
+                        return f"{media_id}_{user_id}"
+            except:
+                pass
+                
         return str(media_id)
 
     async def archive_post(self, post_id: str) -> bool:
