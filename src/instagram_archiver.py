@@ -42,11 +42,13 @@ class InstagramArchiver:
             # Archive posts on Instagram
             await self.archive_posts_on_instagram(posts)
 
-            # Download media files
-            await self.download_media_files(posts)
-
-            # Save metadata
-            self.save_metadata(posts)
+            # Download media files if enabled
+            if self.config.store_locally:
+                logger.info("Starting media downloads and metadata storage...")
+                await self.download_media_files(posts)
+                self.save_metadata(posts)
+            else:
+                logger.info("Local storage disabled, skipping media download and metadata storage")
 
             logger.info("Archival process completed successfully")
             
@@ -78,13 +80,16 @@ class InstagramArchiver:
             logger.info("Attempting to archive post on Instagram...")
             await self.api_client.archive_post(post_id)
 
-            # Download media files
-            logger.info("Downloading media files...")
-            await self.storage.save_media(post)
+            # Download media files if enabled
+            if self.config.store_locally:
+                logger.info("Downloading media files...")
+                await self.storage.save_media(post)
 
-            # Save metadata
-            logger.info("Saving metadata...")
-            self.storage.save_metadata([post])
+                # Save metadata
+                logger.info("Saving metadata...")
+                self.storage.save_metadata([post])
+            else:
+                logger.info("Local storage disabled, skipping media download and metadata storage")
 
             logger.info("Test archival process completed successfully")
             return True

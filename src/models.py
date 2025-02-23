@@ -47,6 +47,9 @@ class ArchiveConfig(BaseModel):
     archive_base_path: Path = Field(
         default_factory=lambda: Path(os.getenv('ARCHIVE_BASE_PATH', './Instagram_Archive'))
     )
+    store_locally: bool = Field(
+        default_factory=lambda: os.getenv('STORE_LOCALLY', 'true').lower() == 'true'
+    )
 
     # Automation settings
     automation_interval_hours: int = Field(
