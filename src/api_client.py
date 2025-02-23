@@ -47,15 +47,32 @@ class InstagramAPIClient:
             logger.error(f"Failed to authenticate with Instagram: {str(e)}")
             raise
 
+    def _shortcode_to_media_id(self, shortcode: str) -> str:
+        """Convert an Instagram shortcode to a media ID
+        Args:
+            shortcode: The shortcode from the Instagram URL
+        Returns:
+            The numeric media ID
+        """
+        alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+        media_id = 0
+        for char in shortcode:
+            media_id = media_id * 64 + alphabet.index(char)
+        return str(media_id)
+
     async def archive_post(self, post_id: str) -> bool:
         """Archive a post using the Instagram Private API
         Args:
-            post_id: The ID of the post to archive
+            post_id: The ID or shortcode of the post
         Returns:
             bool: True if successful, False otherwise
         """
         try:
             await self.rate_limiter.acquire()
+            
+            # Convert shortcode to media ID if needed
+            if not post_id.isdigit():
+                post_id = self._shortcode_to_media_id(post_id)
             
             # Use the private API to archive the post
             result = self.api.media_archive(post_id)
@@ -81,6 +98,11 @@ class InstagramAPIClient:
         """
         try:
             await self.rate_limiter.acquire()
+            
+            # Convert shortcode to media ID if needed
+            if not post_id.isdigit():
+                post_id = self._shortcode_to_media_id(post_id)
+                logger.info(f"Converted shortcode to media ID: {post_id}")
             
             # Fetch post info
             post_info = self.api.media_info(post_id)
