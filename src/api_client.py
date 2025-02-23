@@ -6,7 +6,7 @@ import re
 from typing import List, Dict, Optional
 from datetime import datetime
 from loguru import logger
-from instagram_private_api import Client, ClientError, ClientCheckpointRequiredError, ClientChallengeRequiredError
+from instagram_private_api import Client, ClientError, ClientCheckpointRequiredError, ClientChallengeRequiredError, MediaTypes
 from .models import InstagramPost, MediaFile, Location, ArchiveConfig
 
 class RateLimiter:
@@ -106,8 +106,21 @@ class InstagramAPIClient:
             if not post_id.isdigit():
                 post_id = self._shortcode_to_media_id(post_id)
             
+            # Get post info to determine media type
+            post_info = self.api.media_info(post_id)
+            if not post_info or 'items' not in post_info or not post_info['items']:
+                logger.error(f"Could not fetch info for post {post_id}")
+                return False
+
+            item = post_info['items'][0]
+            media_type = MediaTypes.PHOTO
+            if item['media_type'] == 2:
+                media_type = MediaTypes.VIDEO
+            elif item['media_type'] == 8:
+                media_type = MediaTypes.CAROUSEL
+            
             # Use the private API to archive the post
-            result = self.api.media_archive(post_id)
+            result = self.api.media_only_me(post_id, media_type)
             
             # Check if the archive was successful
             if result.get('status') == 'ok':
