@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 from instagram_private_api import Client, ClientError
 
 from .models import InstagramPost, ArchiveConfig
-from .browser_automation import InstagramBrowserAutomation
 from .storage import LocalStorage
 from .api_client import InstagramAPIClient
 
@@ -20,7 +19,6 @@ class InstagramArchiver:
         self.config = ArchiveConfig()
         self.api_client = InstagramAPIClient()
         self.storage = LocalStorage(base_path=self.config.archive_base_path)
-        self.browser_automation = InstagramBrowserAutomation()
         
         # Setup logging
         logger.add(
@@ -33,7 +31,6 @@ class InstagramArchiver:
     async def initialize(self):
         """Initialize connections and authenticate"""
         await self.api_client.authenticate()
-        await self.browser_automation.initialize()
 
     async def archive_all_posts(self):
         """Main method to archive all posts"""
@@ -79,7 +76,7 @@ class InstagramArchiver:
 
             # Archive post on Instagram
             logger.info("Attempting to archive post on Instagram...")
-            await self.browser_automation.archive_post(post_id)
+            await self.api_client.archive_post(post_id)
 
             # Download media files
             logger.info("Downloading media files...")
@@ -97,11 +94,11 @@ class InstagramArchiver:
             raise
 
     async def archive_posts_on_instagram(self, posts: List[InstagramPost]):
-        """Archive posts on Instagram using browser automation"""
+        """Archive posts on Instagram using API"""
         logger.info("Starting to archive posts on Instagram")
         for post in posts:
             try:
-                await self.browser_automation.archive_post(post.id)
+                await self.api_client.archive_post(post.id)
                 logger.info(f"Successfully archived post {post.id} on Instagram")
             except Exception as e:
                 logger.error(f"Failed to archive post {post.id}: {str(e)}")
@@ -123,7 +120,6 @@ class InstagramArchiver:
 
     async def cleanup(self):
         """Cleanup resources"""
-        await self.browser_automation.cleanup()
         await self.api_client.cleanup()
 
     @classmethod

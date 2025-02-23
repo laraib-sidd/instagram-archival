@@ -47,6 +47,31 @@ class InstagramAPIClient:
             logger.error(f"Failed to authenticate with Instagram: {str(e)}")
             raise
 
+    async def archive_post(self, post_id: str) -> bool:
+        """Archive a post using the Instagram Private API
+        Args:
+            post_id: The ID of the post to archive
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            await self.rate_limiter.acquire()
+            
+            # Use the private API to archive the post
+            result = self.api.media_archive(post_id)
+            
+            # Check if the archive was successful
+            if result.get('status') == 'ok':
+                logger.info(f"Successfully archived post {post_id}")
+                return True
+            else:
+                logger.error(f"Failed to archive post {post_id}: {result}")
+                return False
+
+        except ClientError as e:
+            logger.error(f"Error archiving post {post_id}: {str(e)}")
+            return False
+
     async def fetch_single_post(self, post_id: str) -> Optional[InstagramPost]:
         """Fetch metadata for a single post
         Args:
