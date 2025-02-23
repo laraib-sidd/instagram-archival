@@ -1,9 +1,12 @@
 import time
 import asyncio
+import json
+import getpass
+import re
 from typing import List, Dict, Optional
 from datetime import datetime
 from loguru import logger
-from instagram_private_api import Client, ClientError
+from instagram_private_api import Client, ClientError, ClientCheckpointRequiredError
 from .models import InstagramPost, MediaFile, Location, ArchiveConfig
 
 class RateLimiter:
@@ -43,6 +46,22 @@ class InstagramAPIClient:
                 password=self.config.instagram_password
             )
             logger.info("Successfully authenticated with Instagram")
+        except ClientCheckpointRequiredError:
+            logger.info("Security checkpoint required. Please check your email/phone for verification code.")
+            # Wait for user to check their email/phone
+            verification_code = input("Enter the verification code sent to your email/phone: ").strip()
+            
+            try:
+                # Create a new client instance with the verification code
+                self.api = Client(
+                    username=self.config.instagram_username,
+                    password=self.config.instagram_password,
+                    verification_code=verification_code
+                )
+                logger.info("Successfully authenticated with verification code")
+            except ClientError as e:
+                logger.error(f"Failed to verify code: {str(e)}")
+                raise
         except ClientError as e:
             logger.error(f"Failed to authenticate with Instagram: {str(e)}")
             raise
