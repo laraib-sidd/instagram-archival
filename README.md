@@ -10,6 +10,7 @@ A robust Python tool for automatically archiving Instagram posts both on Instagr
 - Handles rate limiting and API restrictions
 - Provides detailed logging and error handling
 - Supports all media types (images, videos, reels, carousels)
+- Test mode for single post archival
 
 ## Prerequisites
 
@@ -71,7 +72,9 @@ DELAY_BETWEEN_REQUESTS=2
 
 ## Usage
 
-Run the archiver:
+### Archive All Posts
+
+Run the archiver to process all posts:
 ```bash
 python -m src.instagram_archiver
 ```
@@ -82,6 +85,28 @@ The tool will:
 3. Archive each post on Instagram
 4. Download all media files locally
 5. Save comprehensive metadata
+
+### Test With Single Post
+
+To test the archiver with a single post:
+```bash
+python -m src.instagram_archiver <post_url_or_id>
+```
+
+Example:
+```bash
+# Using full URL
+python -m src.instagram_archiver https://www.instagram.com/p/ABC123xyz/
+
+# Using just the post ID/shortcode
+python -m src.instagram_archiver ABC123xyz
+```
+
+This will:
+1. Archive only the specified post
+2. Download its media files
+3. Save its metadata
+Perfect for testing the setup before running a full archive.
 
 ## Output Structure
 

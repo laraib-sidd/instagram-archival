@@ -47,6 +47,31 @@ class InstagramAPIClient:
             logger.error(f"Failed to authenticate with Instagram: {str(e)}")
             raise
 
+    async def fetch_single_post(self, post_id: str) -> Optional[InstagramPost]:
+        """Fetch metadata for a single post
+        Args:
+            post_id: The ID or shortcode of the post
+        Returns:
+            InstagramPost object if successful, None otherwise
+        """
+        try:
+            await self.rate_limiter.acquire()
+            
+            # Fetch post info
+            post_info = self.api.media_info(post_id)
+            if not post_info or 'items' not in post_info or not post_info['items']:
+                logger.error(f"Could not fetch info for post {post_id}")
+                return None
+
+            # Convert to InstagramPost model
+            post = await self._convert_to_post_model(post_info['items'][0])
+            logger.info(f"Successfully fetched post {post_id}")
+            return post
+
+        except ClientError as e:
+            logger.error(f"Error fetching post {post_id}: {str(e)}")
+            return None
+
     async def fetch_all_posts(self) -> List[InstagramPost]:
         """Fetch all posts from the authenticated user's account"""
         posts = []

@@ -1,6 +1,7 @@
 import os
 import json
 import asyncio
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Optional
@@ -56,6 +57,45 @@ class InstagramArchiver:
             logger.error(f"Error during archival process: {str(e)}")
             raise
 
+    async def test_single_post(self, post_url: str):
+        """Test archival process with a single post
+        Args:
+            post_url: Instagram post URL or shortcode
+                     (e.g., https://www.instagram.com/p/ABC123 or just ABC123)
+        """
+        try:
+            # Extract post ID from URL
+            if 'instagram.com' in post_url:
+                post_id = re.search(r'instagram\.com/p/([^/]+)', post_url).group(1)
+            else:
+                post_id = post_url.strip()
+
+            logger.info(f"Testing archival process with post ID: {post_id}")
+
+            # Fetch single post metadata
+            post = await self.api_client.fetch_single_post(post_id)
+            if not post:
+                raise ValueError(f"Could not fetch post with ID: {post_id}")
+
+            # Archive post on Instagram
+            logger.info("Attempting to archive post on Instagram...")
+            await self.browser_automation.archive_post(post_id)
+
+            # Download media files
+            logger.info("Downloading media files...")
+            await self.storage.save_media(post)
+
+            # Save metadata
+            logger.info("Saving metadata...")
+            self.storage.save_metadata([post])
+
+            logger.info("Test archival process completed successfully")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error during test archival process: {str(e)}")
+            raise
+
     async def archive_posts_on_instagram(self, posts: List[InstagramPost]):
         """Archive posts on Instagram using browser automation"""
         logger.info("Starting to archive posts on Instagram")
@@ -87,14 +127,22 @@ class InstagramArchiver:
         await self.api_client.cleanup()
 
     @classmethod
-    async def run(cls):
-        """Main entry point to run the archiver"""
+    async def run(cls, test_post_url: Optional[str] = None):
+        """Main entry point to run the archiver
+        Args:
+            test_post_url: Optional URL or ID of a single post to test with
+        """
         archiver = cls()
         try:
             await archiver.initialize()
-            await archiver.archive_all_posts()
+            if test_post_url:
+                await archiver.test_single_post(test_post_url)
+            else:
+                await archiver.archive_all_posts()
         finally:
             await archiver.cleanup()
 
 if __name__ == "__main__":
-    asyncio.run(InstagramArchiver.run()) 
+    import sys
+    test_post = sys.argv[1] if len(sys.argv) > 1 else None
+    asyncio.run(InstagramArchiver.run(test_post)) 
