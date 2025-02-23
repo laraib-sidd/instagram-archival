@@ -18,6 +18,61 @@ A robust Python tool for automatically archiving Instagram posts both on Instagr
 - Instagram account credentials
 - Instagram Developer App credentials (for API access)
 
+## Getting Instagram Credentials
+
+### 1. Instagram Account Credentials
+These are your regular Instagram login credentials:
+- `INSTAGRAM_USERNAME`: Your Instagram username
+- `INSTAGRAM_PASSWORD`: Your Instagram password
+
+### 2. Instagram Developer Credentials
+To get your Instagram Developer credentials (APP_ID and APP_SECRET):
+
+1. Go to [Meta for Developers](https://developers.facebook.com/)
+2. Log in with your Facebook account (must be linked to your Instagram account)
+3. Create a New App:
+   - Click "Create App"
+   - Select "Consumer" as the app type
+   - Fill in the app details
+   - Click "Create App"
+
+4. Add Instagram Basic Display:
+   - In your app dashboard, click "Add Product"
+   - Find "Instagram Basic Display" and click "Set Up"
+   - Follow the setup wizard
+
+5. Configure Your App:
+   - Go to "Basic Display" under "Instagram Basic Display"
+   - Under "OAuth Redirect URLs" add:
+     ```
+     http://localhost:8000/auth/
+     ```
+   - Add your app's privacy policy URL and terms of service URL
+   - Save changes
+
+6. Get Your Credentials:
+   - `INSTAGRAM_APP_ID`: Find this in your app's basic settings
+   - `INSTAGRAM_APP_SECRET`: In basic settings, click "Show" next to "App Secret"
+
+### 3. Additional Setup
+1. Link Your Instagram Account:
+   - In your app's Instagram Basic Display settings
+   - Click "Add or Remove Instagram Testers"
+   - Add your Instagram account as a tester
+   - Open Instagram and accept the tester invitation
+
+2. Generate Access Token:
+   - In Instagram Basic Display settings
+   - Click "Generate Token"
+   - Follow the authentication flow
+   - Save the token securely
+
+### Security Notes:
+- Never share your credentials or commit them to version control
+- Use environment variables or secure credential storage
+- Regularly rotate your app secret
+- Monitor your app's usage in Meta for Developers dashboard
+
 ## Installation
 
 1. Clone the repository:
