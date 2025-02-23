@@ -6,7 +6,7 @@ import re
 from typing import List, Dict, Optional
 from datetime import datetime
 from loguru import logger
-from instagram_private_api import Client, ClientError, ClientCheckpointRequiredError
+from instagram_private_api import Client, ClientError, ClientCheckpointRequiredError, ClientChallengeRequiredError
 from .models import InstagramPost, MediaFile, Location, ArchiveConfig
 
 class RateLimiter:
@@ -46,21 +46,34 @@ class InstagramAPIClient:
                 password=self.config.instagram_password
             )
             logger.info("Successfully authenticated with Instagram")
-        except ClientCheckpointRequiredError:
-            logger.info("Security checkpoint required. Please check your email/phone for verification code.")
-            # Wait for user to check their email/phone
-            verification_code = input("Enter the verification code sent to your email/phone: ").strip()
+        except (ClientCheckpointRequiredError, ClientChallengeRequiredError) as e:
+            logger.info("Security verification required.")
+            
+            if isinstance(e, ClientCheckpointRequiredError):
+                # Handle email/phone verification code
+                logger.info("Please check your email/phone for verification code.")
+                verification_code = input("Enter the verification code sent to your email/phone: ").strip()
+                verification_method = 'code'
+            else:
+                # Handle mobile app verification
+                logger.info("Please check your Instagram mobile app for verification prompt.")
+                logger.info("1. Open Instagram app on your phone")
+                logger.info("2. Tap the notification or go to Settings -> Security")
+                logger.info("3. Approve the login request")
+                input("Press Enter after approving the login request in your Instagram app...")
+                verification_method = 'challenge'
             
             try:
-                # Create a new client instance with the verification code
+                # Create a new client instance with verification
                 self.api = Client(
                     username=self.config.instagram_username,
                     password=self.config.instagram_password,
-                    verification_code=verification_code
+                    verification_code=verification_code if verification_method == 'code' else None,
+                    challenge_response=True if verification_method == 'challenge' else None
                 )
-                logger.info("Successfully authenticated with verification code")
+                logger.info("Successfully authenticated with verification")
             except ClientError as e:
-                logger.error(f"Failed to verify code: {str(e)}")
+                logger.error(f"Failed to verify: {str(e)}")
                 raise
         except ClientError as e:
             logger.error(f"Failed to authenticate with Instagram: {str(e)}")
