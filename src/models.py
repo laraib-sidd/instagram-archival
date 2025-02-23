@@ -29,7 +29,7 @@ class InstagramPost(BaseModel):
     hashtags: List[str] = Field(default_factory=list)
     location: Optional[Location]
     is_archived: bool = False
-    local_path: Optional[Path]
+    local_path: Optional[Path] = None
 
 class ArchiveConfig(BaseModel):
     """Configuration settings loaded from environment variables"""
